@@ -30,11 +30,11 @@ public class AllPostingFragment extends Fragment {
         View view = binding.getRoot();
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(requireContext());
-        binding.postingRecyclerView.setLayoutManager(layoutManager);
-        binding.postingRecyclerView.setAdapter(postingAdapter);
+        binding.recyclerView.setLayoutManager(layoutManager);
+        binding.recyclerView.setAdapter(postingAdapter);
 
         //searchview
-        binding.postingSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Handle search submission if needed

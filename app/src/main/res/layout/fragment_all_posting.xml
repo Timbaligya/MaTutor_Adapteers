@@ -7,6 +7,12 @@
     android:background="@color/grey"
     tools:context=".fragments.AllPostingFragment">
 
+    <!-- moved outside the coordinator layout   -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -19,11 +25,5 @@
             android:layout_below="@id/searchView"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-    <!-- moved outside the coordinator layout   -->
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/searchView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
 
 </RelativeLayout>

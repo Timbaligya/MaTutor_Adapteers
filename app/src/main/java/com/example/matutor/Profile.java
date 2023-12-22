@@ -208,7 +208,7 @@ public class Profile extends AppCompatActivity implements NavigationView.OnNavig
             return true;
         }
         else if (itemId == R.id.side_progReports) {
-            startActivity(new Intent(getApplicationContext(), ViewProgressReports.class));
+            startActivity(new Intent(getApplicationContext(), Profile.class)); //changed to profile since wla ang viewprogrep act
             return true;
         }
         else if (itemId == R.id.side_yourPostings) {

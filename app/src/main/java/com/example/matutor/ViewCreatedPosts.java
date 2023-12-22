@@ -8,7 +8,6 @@ import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 import com.example.matutor.adapters.createdPost_adapter;
 import com.example.matutor.data.createdPost_data;
 import com.example.matutor.databinding.ActivityViewCreatedPostsBinding;
-import com.example.matutor.databinding.ItemCreatedPostsBinding;
 import com.example.matutor.models.createdPost_model;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -36,9 +34,8 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
     private String userType;
     private createdPost_adapter adapter;
     private ActivityViewCreatedPostsBinding binding;
-    private ItemCreatedPostsBinding itemBinding;
-    FirebaseAuth auth = FirebaseAuth.getInstance();
-    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private createdPost_model createdPostModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,14 +48,17 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
 
         binding.bottomNavigator.setSelectedItemId(R.id.dashboard);
 
-        //FOR DRAWER SIDE MENU
+        // FOR DRAWER SIDE MENU
         setSupportActionBar(binding.toolbar);
-        //NAV MENU
+        // NAV MENU
         binding.navView.bringToFront();
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar, R.string.drawer_open, R.string.drawer_close);
         binding.drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
         binding.navView.setNavigationItemSelectedListener(this);
+
+        // Initialize ViewModel
+        createdPostModel = new ViewModelProvider(this).get(createdPost_model.class);
 
         setUpRecyclerView();
 
@@ -71,21 +71,17 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
                     startActivity(new Intent(getApplicationContext(), Posting.class));
                     overridePendingTransition(0, 0);
                     return true;
-                }
-                else if (itemId == R.id.dashboard) {
+                } else if (itemId == R.id.dashboard) {
                     return true;
-                }
-                else if (itemId == R.id.content) {
+                } else if (itemId == R.id.content) {
                     startActivity(new Intent(getApplicationContext(), Content.class));
                     overridePendingTransition(0, 0);
                     return true;
-                }
-                else if (itemId == R.id.create) {
+                } else if (itemId == R.id.create) {
                     startActivity(new Intent(getApplicationContext(), CreatePosting.class));
                     overridePendingTransition(0, 0);
                     return true;
-                }
-                else if (itemId == R.id.notif) {
+                } else if (itemId == R.id.notif) {
                     startActivity(new Intent(getApplicationContext(), Notification.class));
                     overridePendingTransition(0, 0);
                     return true;
@@ -93,6 +89,9 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
                 return false;
             }
         });
+
+        // Load created posts
+        loadCreatedPosts();
     }
 
     private void setUpRecyclerView() {
@@ -100,7 +99,7 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         if (currentUser != null) {
             String userEmail = currentUser.getEmail();
 
-            CollectionReference createdPostRef = firestore.getInstance()
+            CollectionReference createdPostRef = FirebaseFirestore.getInstance()
                     .collection("createdPosts")
                     .document("createdPost_" + userType)
                     .collection(userEmail);
@@ -112,7 +111,7 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
                     .setLifecycleOwner(this) // For automatic lifecycle management
                     .build();
 
-            adapter =  new createdPost_adapter(options);
+            adapter = new createdPost_adapter(options);
 
             binding.recyclerView.setHasFixedSize(true);
             binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -121,7 +120,6 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         } else {
             Toast.makeText(this, "User not authenticated. (ViewCreatedPost, setUpRecyclerView)", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     @Override
@@ -160,7 +158,7 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
 
     @Override
     public void onBackPressed() {
-        //to avoid closing the application on back press
+        // to avoid closing the application on back press
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.drawerLayout.closeDrawer(GravityCompat.START);
         } else {
@@ -171,7 +169,7 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         }
     }
 
-    //sidemenu
+    // sidemenu
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -179,35 +177,27 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         if (itemId == R.id.side_dashboard) {
             startActivity(new Intent(getApplicationContext(), Dashboard.class));
             return true;
-        }
-        else if (itemId == R.id.side_profile) {
+        } else if (itemId == R.id.side_profile) {
             startActivity(new Intent(getApplicationContext(), Profile.class));
             return true;
-        }
-        else if (itemId == R.id.side_progReports) {
+        } else if (itemId == R.id.side_progReports) {
             startActivity(new Intent(getApplicationContext(), Profile.class)); // Changed to Profile since wla ang viewprogreport activity
             return true;
-        }
-        else if (itemId == R.id.side_yourPostings) {
+        } else if (itemId == R.id.side_yourPostings) {
             return true;
-        }
-        else if (itemId == R.id.side_yourBookings) {
+        } else if (itemId == R.id.side_yourBookings) {
             startActivity(new Intent(getApplicationContext(), Bookings.class));
             return true;
-        }
-        else if (itemId == R.id.side_yourReviews) {
+        } else if (itemId == R.id.side_yourReviews) {
             startActivity(new Intent(getApplicationContext(), ReviewsHistory.class));
             return true;
-        }
-        else if (itemId == R.id.side_yourHistory) {
+        } else if (itemId == R.id.side_yourHistory) {
             startActivity(new Intent(getApplicationContext(), BookingsHistory.class));
             return true;
-        }
-        else if (itemId == R.id.side_help) {
-            //create help smth
+        } else if (itemId == R.id.side_help) {
+            // create help smth
             return true;
-        }
-        else if (itemId == R.id.side_logout) {
+        } else if (itemId == R.id.side_logout) {
             logoutConfirmation();
             return true;
         }
@@ -219,7 +209,7 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         builder.setTitle("Logout Session");
         builder.setMessage("Are you sure you want to logout?");
         builder.setPositiveButton("Yes", (dialog, which) -> {
-            auth.getInstance().signOut();
+            FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
@@ -227,5 +217,9 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         });
         builder.setNegativeButton("No", null);
         builder.show();
+    }
+
+    private void loadCreatedPosts() {
+        createdPostModel.loadCreatedPosts();
     }
 }

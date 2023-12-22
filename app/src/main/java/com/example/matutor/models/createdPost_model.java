@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.matutor.data.createdPost_data;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -18,7 +19,7 @@ import java.util.List;
 public class createdPost_model extends ViewModel {
     private String userType;
     private MutableLiveData<List<createdPost_data>> createdPost = new MutableLiveData<>();
-    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     public LiveData<List<createdPost_data>> getCreatedPosts() {
         return createdPost;
@@ -29,18 +30,20 @@ public class createdPost_model extends ViewModel {
         if (currentUser != null) {
             String userEmail = currentUser.getEmail();
 
-            firestore.getInstance()
-                    .collection("createdPosts")
+            firestore.collection("createdPosts")
                     .document("createdPost_" + userType)
                     .collection(userEmail)
                     .get()
-                    .addOnSuccessListener(querySnapshots -> {
-                        List<createdPost_data> createdPostList = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : querySnapshots) {
-                            createdPost_data createdPostData = document.toObject(createdPost_data.class);
-                            createdPostList.add(createdPostData);
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot querySnapshots) {
+                            List<createdPost_data> createdPostList = new ArrayList<>();
+                            for (QueryDocumentSnapshot document : querySnapshots) {
+                                createdPost_data createdPostData = document.toObject(createdPost_data.class);
+                                createdPostList.add(createdPostData);
+                            }
+                            createdPost.setValue(createdPostList);
                         }
-                        createdPost.setValue(createdPostList);
                     });
         }
     }
