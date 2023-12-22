@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.matutor.R;
 import com.example.matutor.data.createdPost_data;
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter; // added dependency:implementation 'com.firebaseui:firebase-ui-firestore:8.0.0'
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import java.util.List;
