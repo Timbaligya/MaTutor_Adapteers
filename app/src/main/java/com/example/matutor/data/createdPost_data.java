@@ -10,10 +10,10 @@ public class createdPost_data {
     private String userLastname;
 
     public createdPost_data() {
-        //empty constructor needed for firebase
+        // Empty constructor needed for Firebase
     }
 
-    public createdPost_data(String postTitle, String postDescription, List<String> postTags, String userUid, String userEmail, String userFirstname, String userLastname) {
+    public createdPost_data(String postTitle, String postDescription, List<String> postTags, String userFirstname, String userLastname) {
         this.postTitle = postTitle;
         this.postDescription = postDescription;
         this.postTags = postTags;
