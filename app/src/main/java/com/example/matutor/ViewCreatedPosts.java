@@ -6,14 +6,18 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.matutor.adapters.createdPost_adapter;
@@ -21,11 +25,15 @@ import com.example.matutor.data.createdPost_data;
 import com.example.matutor.databinding.ActivityViewCreatedPostsBinding;
 import com.example.matutor.models.createdPost_model;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -35,6 +43,8 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
     private createdPost_adapter adapter;
     private ActivityViewCreatedPostsBinding binding;
     private createdPost_model createdPostModel;
+    FirebaseAuth auth = FirebaseAuth.getInstance();
+    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +55,9 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
 
         SharedPreferences pref = getSharedPreferences("user_type", MODE_PRIVATE);
         userType = pref.getString("user_type", "");
+
+        //fetch user's info to display in the sidemenu header
+        fetchUserInfoHeader();
 
         binding.bottomNavigator.setSelectedItemId(R.id.dashboard);
 
@@ -117,6 +130,20 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
             binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
             binding.recyclerView.setAdapter(adapter);
 
+            new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                    ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                    return false;
+                }
+
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    int position = viewHolder.getAbsoluteAdapterPosition();
+                    deleteConfirmation(position);
+                }
+            }).attachToRecyclerView(binding.recyclerView);
+
         } else {
             Toast.makeText(this, "User not authenticated. (ViewCreatedPost, setUpRecyclerView)", Toast.LENGTH_SHORT).show();
         }
@@ -134,13 +161,14 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         adapter.stopListening();
     }
 
-    private void deleteConfirmation() {
+    private void deleteConfirmation(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Remove");
         builder.setMessage("Remove post?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                adapter.deletePost(position);
                 Intent intent = new Intent(getApplicationContext(), Posting.class);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_out_left, R.anim.slide_in_right);
@@ -202,6 +230,54 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
             return true;
         }
         return false;
+    }
+
+    private void fetchUserInfoHeader() {
+        View headerView = binding.navView.getHeaderView(0);
+        TextView headerFullname = headerView.findViewById(R.id.userFullnameSidebar);
+        TextView headerEmail = headerView.findViewById(R.id.userEmailSidebar);
+        String currentUserEmail = auth.getCurrentUser() != null ? auth.getCurrentUser().getEmail() : null;
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
+            String userEmail = currentUser.getEmail();
+
+            if (currentUserEmail != null) {
+                SharedPreferences pref = getSharedPreferences("user_type", MODE_PRIVATE);
+                String userType = pref.getString("user_type", "");
+
+                DocumentReference userRef = firestore.collection("all_users")
+                        .document(userType)
+                        .collection("users")
+                        .document(userEmail);
+
+                userRef.get()
+                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                if (documentSnapshot.exists()) {
+                                    String email = documentSnapshot.getString("userEmail");
+                                    String firstname = documentSnapshot.getString("userFirstname");
+                                    String lastname = documentSnapshot.getString("userLastname");
+                                    String fullname = firstname + " " + lastname;
+
+                                    headerFullname.setText(fullname);
+                                    headerEmail.setText(email);
+
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Document does not exist for email (documentShapshot.exists): " + userEmail, Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+            }
+        }
     }
 
     private void logoutConfirmation() {

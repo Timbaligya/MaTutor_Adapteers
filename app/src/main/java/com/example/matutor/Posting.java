@@ -7,22 +7,32 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.matutor.databinding.ActivityPostingBinding;
 import com.example.matutor.adapters.viewPagerAdapter_posting;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class Posting extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
+    private ActivityPostingBinding binding;
+    private viewPagerAdapter_posting viewPagerAdapter;
     FirebaseAuth auth = FirebaseAuth.getInstance();
-    ActivityPostingBinding binding;
-    viewPagerAdapter_posting viewPagerAdapter;
+    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +50,7 @@ public class Posting extends AppCompatActivity implements NavigationView.OnNavig
         toggle.syncState();
         binding.navView.setNavigationItemSelectedListener(this);
 
+        fetchUserInfoHeader();
 
         viewPagerAdapter = new viewPagerAdapter_posting(this);
         binding.tabViewPager2.setAdapter(viewPagerAdapter);
@@ -147,6 +158,54 @@ public class Posting extends AppCompatActivity implements NavigationView.OnNavig
             return true;
         }
         return false;
+    }
+
+    private void fetchUserInfoHeader() {
+        View headerView = binding.navView.getHeaderView(0);
+        TextView headerFullname = headerView.findViewById(R.id.userFullnameSidebar);
+        TextView headerEmail = headerView.findViewById(R.id.userEmailSidebar);
+        String currentUserEmail = auth.getCurrentUser() != null ? auth.getCurrentUser().getEmail() : null;
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
+            String userEmail = currentUser.getEmail();
+
+            if (currentUserEmail != null) {
+                SharedPreferences pref = getSharedPreferences("user_type", MODE_PRIVATE);
+                String userType = pref.getString("user_type", "");
+
+                DocumentReference userRef = firestore.collection("all_users")
+                        .document(userType)
+                        .collection("users")
+                        .document(userEmail);
+
+                userRef.get()
+                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                if (documentSnapshot.exists()) {
+                                    String email = documentSnapshot.getString("userEmail");
+                                    String firstname = documentSnapshot.getString("userFirstname");
+                                    String lastname = documentSnapshot.getString("userLastname");
+                                    String fullname = firstname + " " + lastname;
+
+                                    headerFullname.setText(fullname);
+                                    headerEmail.setText(email);
+
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Document does not exist for email (documentShapshot.exists): " + userEmail, Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+            }
+        }
     }
 
     @Override

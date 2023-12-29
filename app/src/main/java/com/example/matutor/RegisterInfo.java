@@ -223,10 +223,10 @@ public class RegisterInfo extends AppCompatActivity {
                                                         binding.regGuardianEmailInput.getText().clear();
 
                                                         // Upload images to Firestore Storage
-                                                        uploadDefaultProfile(userEmail, firestore);
-                                                        uploadImageToFirestore(userEmail, SELECT_ID_FRONT, imageData, idFrontFileName);
-                                                        uploadImageToFirestore(userEmail, SELECT_ID_BACK, imageData, idBackFileName);
-                                                        uploadImageToFirestore(userEmail, SELECT_SELFIE, imageData, selfieFileName);
+                                                        //uploadDefaultProfile(userEmail, firestore);
+                                                        //uploadImageToFirestore(userEmail, SELECT_ID_FRONT, imageData, idFrontFileName);
+                                                        //uploadImageToFirestore(userEmail, SELECT_ID_BACK, imageData, idBackFileName);
+                                                        //uploadImageToFirestore(userEmail, SELECT_SELFIE, imageData, selfieFileName);
 
                                                         Toast.makeText(getApplicationContext(), "Learner has successfully registered!", Toast.LENGTH_SHORT).show();
                                                     })

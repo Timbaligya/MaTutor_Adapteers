@@ -1,80 +1,67 @@
 package com.example.matutor.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
-import androidx.appcompat.widget.SearchView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-
-import com.example.matutor.R;
 import com.example.matutor.adapters.posting_adapter;
+import com.example.matutor.data.allPost_data;
 import com.example.matutor.databinding.FragmentAllPostingBinding;
+import com.example.matutor.R;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class AllPostingFragment extends Fragment {
 
-    FragmentAllPostingBinding binding;
-    posting_adapter postingAdapter;
+    private FragmentAllPostingBinding binding;
+    private posting_adapter allPostAdapter;
+    private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment using ViewBinding
-        binding = FragmentAllPostingBinding.inflate(inflater, container, false);
-        View view = binding.getRoot();
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_all_posting, container, false);
 
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(requireContext());
-        binding.recyclerView.setLayoutManager(layoutManager);
-        binding.recyclerView.setAdapter(postingAdapter);
+        // Initialize RecyclerView and adapter
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
 
-        //searchview
-        binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // Handle search submission if needed
-                return false;
-            }
+        // Configure the query
+        Query query = firestore.collection("createdPosts");
+        FirestoreRecyclerOptions<allPost_data> options = new FirestoreRecyclerOptions.Builder<allPost_data>()
+                .setQuery(query, allPost_data.class)
+                .build();
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                // Handle search text change and filter your data accordingly
-                // Update the RecyclerView adapter with filtered data
-                return false;
-            }
-        });
+        allPostAdapter = new posting_adapter(options);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(allPostAdapter);
 
-        /*/spinner
-        // Populate the spinner with filter options
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                requireContext(), R.array.search_filter, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.postingFilterSpinner.setAdapter(adapter);
-
-        binding.postingFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                // Handle filter selection and update the RecyclerView adapter
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                //do nothing
-            }
-        }); */
 
         return view;
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null; // Release the ViewBinding object when the view is destroyed
+    public void onStart() {
+        super.onStart();
+        Log.d("Firestore", "Fragment onStart");
+        allPostAdapter.startListening();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("Firestore", "Fragment onStop");
+        allPostAdapter.stopListening();
+    }
 }

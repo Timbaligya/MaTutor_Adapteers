@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,13 +11,16 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.matutor.databinding.ActivityReviewsHistoryBinding;
+import com.example.matutor.databinding.ActivityViewProgressReportsBinding;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -26,9 +28,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class ReviewsHistory extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ViewProgressReports extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    ActivityReviewsHistoryBinding binding;
+    private ActivityViewProgressReportsBinding binding;
     FirebaseAuth auth = FirebaseAuth.getInstance();
     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
@@ -36,10 +38,7 @@ public class ReviewsHistory extends AppCompatActivity implements NavigationView.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); // removes status bar
-        binding = ActivityReviewsHistoryBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        binding.bottomNavigator.setSelectedItemId(R.id.dashboard);
+        setContentView(R.layout.activity_view_progress_reports);
 
         fetchUserInfoHeader();
 
@@ -51,7 +50,6 @@ public class ReviewsHistory extends AppCompatActivity implements NavigationView.
         binding.drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
         binding.navView.setNavigationItemSelectedListener(this);
-
 
         //navbar navigation
         binding.bottomNavigator.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -65,6 +63,8 @@ public class ReviewsHistory extends AppCompatActivity implements NavigationView.
                     return true;
                 }
                 else if (itemId == R.id.dashboard) {
+                    startActivity(new Intent(getApplicationContext(), Dashboard.class));
+                    overridePendingTransition(0, 0);
                     return true;
                 }
                 else if (itemId == R.id.content) {
@@ -73,8 +73,6 @@ public class ReviewsHistory extends AppCompatActivity implements NavigationView.
                     return true;
                 }
                 else if (itemId == R.id.create) {
-                    startActivity(new Intent(getApplicationContext(), CreatePosting.class));
-                    overridePendingTransition(0, 0);
                     return true;
                 }
                 else if (itemId == R.id.notif) {
@@ -86,63 +84,6 @@ public class ReviewsHistory extends AppCompatActivity implements NavigationView.
             }
         });
 
-    }
-
-    @Override
-    public void onBackPressed() {
-        //to avoid closing the application on back press
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            Intent intent = new Intent(getApplicationContext(), Dashboard.class);
-            startActivity(intent);
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-            finish();
-        }
-    }
-
-    //sidemenu
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.side_dashboard) {
-            startActivity(new Intent(getApplicationContext(), Dashboard.class));
-            return true;
-        }
-        else if (itemId == R.id.side_profile) {
-            startActivity(new Intent(getApplicationContext(), Profile.class));
-            return true;
-        }
-        else if (itemId == R.id.side_progReports) {
-            startActivity(new Intent(getApplicationContext(), Profile.class)); //changed to profile since wla ang viewprogrep act
-            return true;
-        }
-        else if (itemId == R.id.side_yourPostings) {
-            startActivity(new Intent(getApplicationContext(), ViewCreatedPosts.class));
-            return true;
-        }
-        else if (itemId == R.id.side_yourBookings) {
-            startActivity(new Intent(getApplicationContext(), Bookings.class));
-            return true;
-        }
-        else if (itemId == R.id.side_yourReviews) {
-            startActivity(new Intent(getApplicationContext(), ReviewsHistory.class));
-            return true;
-        }
-        else if (itemId == R.id.side_yourHistory) {
-            startActivity(new Intent(getApplicationContext(), BookingsHistory.class));
-            return true;
-        }
-        else if (itemId == R.id.side_help) {
-            //create help smth
-            return true;
-        }
-        else if (itemId == R.id.side_logout) {
-            logoutConfirmation();
-            return true;
-        }
-        return false;
     }
 
     private void fetchUserInfoHeader() {
@@ -208,4 +149,54 @@ public class ReviewsHistory extends AppCompatActivity implements NavigationView.
         builder.show();
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(getApplicationContext(), Posting.class);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
+        finish();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.side_dashboard) {
+            startActivity(new Intent(getApplicationContext(), Dashboard.class));
+            return true;
+        }
+        else if (itemId == R.id.side_profile) {
+            startActivity(new Intent(getApplicationContext(), Profile.class));
+            return true;
+        }
+        else if (itemId == R.id.side_progReports) {
+            startActivity(new Intent(getApplicationContext(), ViewProgressReports.class));
+            return true;
+        }
+        else if (itemId == R.id.side_yourPostings) {
+            startActivity(new Intent(getApplicationContext(), ViewCreatedPosts.class));
+            return true;
+        }
+        else if (itemId == R.id.side_yourBookings) {
+            startActivity(new Intent(getApplicationContext(), Bookings.class));
+            return true;
+        }
+        else if (itemId == R.id.side_yourReviews) {
+            startActivity(new Intent(getApplicationContext(), ReviewsHistory.class));
+            return true;
+        }
+        else if (itemId == R.id.side_yourHistory) {
+            startActivity(new Intent(getApplicationContext(), BookingsHistory.class));
+            return true;
+        }
+        else if (itemId == R.id.side_help) {
+            //create help smth
+            return true;
+        }
+        else if (itemId == R.id.side_logout) {
+            logoutConfirmation();
+            return true;
+        }
+        return false;
+    }
 }

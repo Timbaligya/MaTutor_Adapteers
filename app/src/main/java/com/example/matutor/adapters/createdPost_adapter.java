@@ -38,6 +38,10 @@ public class createdPost_adapter extends FirestoreRecyclerAdapter<createdPost_da
         return new createdPostHolder(view);
     }
 
+    public void deletePost(int position) {
+        getSnapshots().getSnapshot(position).getReference().delete();
+    }
+
     class createdPostHolder extends RecyclerView.ViewHolder {
         TextView postTitle;
         TextView postDesc;
@@ -74,7 +78,7 @@ public class createdPost_adapter extends FirestoreRecyclerAdapter<createdPost_da
             }
         }
 
-        //Create the the buttons
+        //Create the buttons
         private Button createTagButton(String tagName) {
             Button button = new Button(itemView.getContext());
             button.setText(tagName);
