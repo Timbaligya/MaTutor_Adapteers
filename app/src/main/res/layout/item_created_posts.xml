@@ -84,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:backgroundTint="@color/white"
-                    android:text="TAG"
+                    android:text="Topic"
                     android:textColor="@android:color/darker_gray"
                     android:textSize="10sp" />
             </LinearLayout>

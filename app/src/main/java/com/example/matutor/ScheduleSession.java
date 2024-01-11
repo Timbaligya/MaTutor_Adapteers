@@ -8,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
@@ -19,16 +20,23 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.matutor.databinding.ActivityScheduleSessionBinding;
+import com.example.matutor.services.FCMNotifs;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.example.matutor.services.FCMNotifs;
 
 import java.util.Calendar;
 
 public class ScheduleSession extends AppCompatActivity {
 
     ActivityScheduleSessionBinding binding;
+    private String userType;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); // removes status bar
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         binding = ActivityScheduleSessionBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -64,6 +72,13 @@ public class ScheduleSession extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Toast.makeText(getApplicationContext(), "Schedule set!", Toast.LENGTH_SHORT).show();
+                // Request FCM token (if needed in ScheduleSession)
+                requestFCMToken();
+
+                // Send notification to the creator
+                FCMNotifs.sendNotification("Post Response", "Someone is interested in your post!", getApplicationContext());
+
+                // Navigate to the desired activity (e.g., Bookings)
                 Intent intent = new Intent(getApplicationContext(), Bookings.class);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -143,7 +158,7 @@ public class ScheduleSession extends AppCompatActivity {
     private void closeConfirmation() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Confirm?");
-        builder.setMessage("Cancel review?");
+        builder.setMessage("Cancel schedule setup?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -162,4 +177,18 @@ public class ScheduleSession extends AppCompatActivity {
         builder.show();
     }
 
+    private void requestFCMToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        // Handle token retrieval failure
+                        return;
+                    }
+                    // Get new FCM registration token
+                    String token = task.getResult();
+
+                    // Log and handle the token as needed
+                    Log.d("FCMNotifs", "FCM Token: " + token);
+                });
+    }
 }

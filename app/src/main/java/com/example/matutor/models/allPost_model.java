@@ -50,28 +50,26 @@ public class allPost_model extends ViewModel {
                             Log.d("Firestore", "onSuccess: " + querySnapshots.size() + " documents retrieved.");
 
                             for (QueryDocumentSnapshot document : querySnapshots) {
-                                // Assuming the documents contain a subcollection named with the user's email
-                                Query userCollectionQuery = document.getReference().collection(userEmail);
-                                userCollectionQuery.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onSuccess(QuerySnapshot userSnapshots) {
-                                                for (QueryDocumentSnapshot userDocument : userSnapshots) {
-                                                    allPost_data createdPostData = userDocument.toObject(allPost_data.class);
-                                                    allPostList.add(createdPostData);
-                                                }
-                                                allPosts.setValue(allPostList);
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.e("Firestore", "Error fetching user collection: " + e.getMessage());
-                                            }
-                                        });
+                                // Directly access the user-specific subcollection
+                                CollectionReference userCollectionRef = document.getReference().collection(userEmail);
+                                userCollectionRef.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot userSnapshots) {
+                                        for (QueryDocumentSnapshot userDocument : userSnapshots) {
+                                            allPost_data createdPostData = userDocument.toObject(allPost_data.class);
+                                            allPostList.add(createdPostData);
+                                        }
+                                        allPosts.setValue(allPostList);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.e("Firestore", "Error fetching user collection: " + e.getMessage());
+                                    }
+                                });
                             }
                         }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
+                    }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Log.e("Firestore", "Error fetching createdPosts collection: " + e.getMessage());
@@ -79,4 +77,5 @@ public class allPost_model extends ViewModel {
                     });
         }
     }
+
 }

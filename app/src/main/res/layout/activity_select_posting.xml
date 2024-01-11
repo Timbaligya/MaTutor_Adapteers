@@ -83,6 +83,7 @@
                     android:justificationMode="inter_word"/>
 
                 <TextView
+                    android:id="@+id/postingDescTextView"
                     android:layout_width="300dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
