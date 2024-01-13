@@ -37,12 +37,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
-public class ViewCreatedPosts extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ViewCreatedPosts extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
+        createdPost_adapter.OnCloseButtonClickListener {
 
     private String userType;
     private createdPost_adapter adapter;
     private ActivityViewCreatedPostsBinding binding;
-    private createdPost_model createdPostModel;
+    private createdPost_model model;
     FirebaseAuth auth = FirebaseAuth.getInstance();
     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
@@ -71,9 +72,10 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         binding.navView.setNavigationItemSelectedListener(this);
 
         // Initialize ViewModel
-        createdPostModel = new ViewModelProvider(this).get(createdPost_model.class);
+        model = new ViewModelProvider(this).get(createdPost_model.class);
 
         setUpRecyclerView();
+        model.loadCreatedPosts();
 
         binding.bottomNavigator.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -102,9 +104,6 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
                 return false;
             }
         });
-
-        // Load created posts
-        loadCreatedPosts();
     }
 
     private void setUpRecyclerView() {
@@ -121,10 +120,10 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
 
             FirestoreRecyclerOptions<createdPost_data> options = new FirestoreRecyclerOptions.Builder<createdPost_data>()
                     .setQuery(query, createdPost_data.class)
-                    .setLifecycleOwner(this) // For automatic lifecycle management
+                    .setLifecycleOwner(this)
                     .build();
 
-            adapter = new createdPost_adapter(options);
+            adapter = new createdPost_adapter(options, this); // Pass 'this' as the listener
 
             binding.recyclerView.setHasFixedSize(true);
             binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -159,6 +158,12 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
     public void onStop() {
         super.onStop();
         adapter.stopListening();
+    }
+
+    @Override
+    public void onCloseButtonClick(DocumentSnapshot documentSnapshot, int position) {
+        // Handle the close button click here
+        deleteConfirmation(position);
     }
 
     private void deleteConfirmation(int position) {
@@ -293,9 +298,5 @@ public class ViewCreatedPosts extends AppCompatActivity implements NavigationVie
         });
         builder.setNegativeButton("No", null);
         builder.show();
-    }
-
-    private void loadCreatedPosts() {
-        createdPostModel.loadCreatedPosts();
     }
 }

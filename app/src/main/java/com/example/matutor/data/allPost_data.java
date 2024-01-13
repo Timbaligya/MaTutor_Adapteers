@@ -8,6 +8,9 @@ public class allPost_data {
     private List<String> postTags;
     private String userFirstname;
     private String userLastname;
+    private String userEmail; // Add userEmail and postId fields
+    private String postId;
+    private String userType;
 
     public allPost_data() {
         // Empty constructor needed for Firebase
@@ -40,5 +43,27 @@ public class allPost_data {
     public String getUserLastname() {
         return userLastname;
     }
-}
 
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public String getPostId() {
+        return postId;
+    }
+
+    public void setPostId(String postId) {
+        this.postId = postId;
+    }
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+}

@@ -1,6 +1,7 @@
 package com.example.matutor;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.util.Log;
 import com.example.matutor.adapters.selectPost_adapter;
 import com.example.matutor.databinding.ActivitySelectPostingBinding;
 import com.example.matutor.data.selectPost_data;
+import com.example.matutor.models.createdPost_model;
 import com.example.matutor.models.selectPost_model;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,7 +31,6 @@ public class SelectPosting extends AppCompatActivity {
     private ActivitySelectPostingBinding binding;
 
     private selectPost_adapter selectPostAdapter;
-
     private selectPost_model selectPostModel;
     FirebaseAuth auth = FirebaseAuth.getInstance();
     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
@@ -41,6 +42,9 @@ public class SelectPosting extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        // Initialize ViewModel
+        selectPostModel = new ViewModelProvider(this).get(selectPost_model.class);
 
         binding.interestedButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,7 +64,7 @@ public class SelectPosting extends AppCompatActivity {
                 finish();
             }
         });
-
+        loadSelectPosts();
         setUpRecyclerView();
     }
 
@@ -91,5 +95,9 @@ public class SelectPosting extends AppCompatActivity {
         startActivity(intent);
         overridePendingTransition(R.anim.slide_out_left, R.anim.slide_in_right);
         finish();
+    }
+
+    private void loadSelectPosts() {
+        selectPostModel.loadSelectedPosts();
     }
 }

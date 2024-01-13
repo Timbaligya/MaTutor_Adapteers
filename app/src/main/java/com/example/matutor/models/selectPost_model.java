@@ -25,7 +25,7 @@ public class selectPost_model extends ViewModel {
         return selectedPost;
     }
 
-    public void loadCreatedPosts() {
+    public void loadSelectedPosts() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userEmail = currentUser.getEmail();

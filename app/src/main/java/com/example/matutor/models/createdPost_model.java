@@ -8,7 +8,6 @@ import com.example.matutor.data.createdPost_data;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -20,7 +19,6 @@ public class createdPost_model extends ViewModel {
     private String userType;
     private MutableLiveData<List<createdPost_data>> createdPost = new MutableLiveData<>();
     private FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-
     public LiveData<List<createdPost_data>> getCreatedPosts() {
         return createdPost;
     }
@@ -47,4 +45,5 @@ public class createdPost_model extends ViewModel {
                     });
         }
     }
+
 }

@@ -10,6 +10,7 @@ import android.content.res.ColorStateList;
 import android.media.MediaTimestamp;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -127,11 +128,10 @@ public class CreatePosting extends AppCompatActivity {
                                                 // Getting post details from UI input fields
                                                 String postTitle = binding.postTitleInput.getText().toString();
                                                 String postDescription = binding.postDescInput.getText().toString();
-                                                String postId = userEmail; //user's email as the document id
 
                                                 // Creating a map to store post data
                                                 Map<String, Object> createdPostData = new HashMap<>();
-                                                createdPostData.put("postId", postId);
+                                                createdPostData.put("postId", "");
                                                 createdPostData.put("postTitle", postTitle);
                                                 createdPostData.put("postDescription", postDescription);
                                                 createdPostData.put("postTags", tagsList);
@@ -140,21 +140,26 @@ public class CreatePosting extends AppCompatActivity {
                                                 createdPostData.put("userLastname", userLastname);
                                                 createdPostData.put("userEmail", userEmail);
 
-                                                // Adding the post to the learner's "created_posts" collection with auto-generated ID
                                                 createdPostCollection.add(createdPostData)
-                                                        .addOnCompleteListener(postTask -> {
-                                                            if (postTask.isSuccessful()) {
-                                                                // Post creation successful
-                                                                Toast.makeText(getApplicationContext(), "Post created!", Toast.LENGTH_SHORT).show();
-                                                                Intent intent = new Intent(getApplicationContext(), ViewCreatedPosts.class);
-                                                                startActivity(intent);
-                                                                overridePendingTransition( R.anim.slide_out_left, R.anim.slide_in_right);
-                                                                finish();
-                                                            } else {
-                                                                // Post creation failed
-                                                                Toast.makeText(getApplicationContext(), "Post creation failed!", Toast.LENGTH_SHORT).show();
-                                                            }
+                                                        .addOnSuccessListener(documentReference -> {
+                                                            String postId = documentReference.getId();
+
+                                                            createdPostCollection.document(postId).update("postId", postId)
+                                                                    .addOnCompleteListener(task -> {
+                                                                        if (task.isSuccessful()) {
+                                                                            Toast.makeText(getApplicationContext(), "Post created!", Toast.LENGTH_SHORT).show();
+                                                                            Log.d("Create Post", "post successfully created for " + userEmail);
+
+                                                                            Intent intent = new Intent(getApplicationContext(), ViewCreatedPosts.class);
+                                                                            startActivity(intent);
+                                                                            overridePendingTransition( R.anim.slide_out_left, R.anim.slide_in_right);
+                                                                            finish();
+                                                                        } else {
+                                                                            Toast.makeText(getApplicationContext(), "Post creation failed!", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    });
                                                         });
+
                                             } else {
                                                 Toast.makeText(getApplicationContext(), "Document does not exist for userEmail (userSnapshot): " + userEmail, Toast.LENGTH_SHORT).show();
                                             }

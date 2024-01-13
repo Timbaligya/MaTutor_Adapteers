@@ -14,14 +14,18 @@ import com.example.matutor.R;
 import com.example.matutor.data.createdPost_data;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.List;
 
 public class createdPost_adapter extends FirestoreRecyclerAdapter<createdPost_data, createdPost_adapter.createdPostHolder> {
+    private OnCloseButtonClickListener closeButtonClickListener;
 
-    public createdPost_adapter(@NonNull FirestoreRecyclerOptions<createdPost_data> options) {
+    public createdPost_adapter(@NonNull FirestoreRecyclerOptions<createdPost_data> options, OnCloseButtonClickListener listener) {
         super(options);
+        this.closeButtonClickListener = listener;
     }
+
 
     @Override
     protected void onBindViewHolder(@NonNull createdPostHolder holder, int position, @NonNull createdPost_data model) {
@@ -30,6 +34,19 @@ public class createdPost_adapter extends FirestoreRecyclerAdapter<createdPost_da
         holder.userFirstname.setText(model.getUserFirstname());
         holder.userLastname.setText(model.getUserLastname());
         holder.displayPostTags(model.getPostTags());
+
+        holder.closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (closeButtonClickListener != null) {
+                    closeButtonClickListener.onCloseButtonClick(getSnapshots().getSnapshot(holder.getAdapterPosition()), holder.getAdapterPosition());
+                }
+            }
+        });
+    }
+
+    public interface OnCloseButtonClickListener {
+        void onCloseButtonClick(DocumentSnapshot documentSnapshot, int position);
     }
 
     @Override
@@ -49,6 +66,7 @@ public class createdPost_adapter extends FirestoreRecyclerAdapter<createdPost_da
         TextView userLastname;
         LinearLayout tagButtonsFrame; //for tags
         LinearLayout tagButtonsFrame2; // for tags
+        Button closeButton;
 
         public createdPostHolder(@NonNull View itemView) {
             super(itemView);
@@ -59,6 +77,7 @@ public class createdPost_adapter extends FirestoreRecyclerAdapter<createdPost_da
             userLastname = itemView.findViewById(R.id.userLastnameCP);
             tagButtonsFrame = itemView.findViewById(R.id.tagButtonsFrame); // for tags
             tagButtonsFrame2 = itemView.findViewById(R.id.tagButtonsFrame2); // for tags
+            closeButton = itemView.findViewById(R.id.closeButton);
         }
 
         private void displayPostTags(List<String> postTags) {
